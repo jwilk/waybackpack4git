@@ -23,6 +23,8 @@ def git_download_to(self, directory,
 
     os.mkdir(directory)
     subprocess.check_call(['git', '-c', 'init.defaultBranch=waybackpack', 'init', '--', directory])
+    # Git before v2.28 didn't understand init.defaultBranch, so let's check it out manually:
+    subprocess.check_call(['git', '-C', directory, 'checkout', '-b', 'waybackpack'])
     with subprocess.Popen(['git', '-C', directory, 'fast-import', '--quiet'], stdin=subprocess.PIPE) as proc:
         _git_download_to(self, stream=proc.stdin, raw=raw, root=root, ignore_errors=ignore_errors)
     if proc.returncode != 0:
