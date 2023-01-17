@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+# encoding=UTF-8
+
+# Copyright © 2016 Jeremy Singer-Vine
+# Copyright © 2023 Jakub Wilk <jwilk@jwilk.net>
+# SPDX-License-Identifier: MIT
+
+import datetime
+import os
+import re
+import subprocess
+import sys
+
+import waybackpack.pack
+import waybackpack.cli
+
+def git_download_to(self, directory,
+        raw=False,
+        root=waybackpack.pack.DEFAULT_ROOT,
+        ignore_errors=False,
+        no_clobber=False,
+        progress=False):
+
+    os.mkdir(directory)
+    subprocess.check_call(['git', '-c', 'init.defaultBranch=waybackpack', 'init', '--', directory])
+    with subprocess.Popen(['git', '-C', directory, 'fast-import', '--quiet'], stdin=subprocess.PIPE) as proc:
+        _git_download_to(self, stream=proc.stdin, raw=raw, root=root, ignore_errors=ignore_errors)
+    if proc.returncode != 0:
+        raise RuntimeError('git-fast-import failed')
+
+def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT, ignore_errors=False):
+    logger = waybackpack.pack.logger
+
+    write = stream.write
+    write(b'reset refs/heads/waybackpack\n')
+
+    path_head, path_tail = os.path.split(self.parsed_url.path)
+    if path_tail == "":
+        path_tail = "index.html"
+    path = os.path.join(
+        self.parsed_url.netloc,
+        path_head.lstrip("/"),
+        path_tail
+    )
+    qpath = '"' + re.sub(r'([\n\\"])', r'\\\1', path) + '"'
+    qpath = os.fsencode(qpath)
+
+    for n, asset in enumerate(self.assets, 1):
+
+        logger.info(
+            "Fetching {0} @ {1}".format(
+                asset.original_url,
+                asset.timestamp)
+        )
+
+        try:
+            content = asset.fetch(
+                session=self.session,
+                raw=raw,
+                root=root
+            )
+        except Exception as e:
+            if ignore_errors == True:
+                ex_name = ".".join([ e.__module__, e.__class__.__name__ ])
+                logger.warn("ERROR -- {0} @ {1} -- {2}: {3}".format(
+                    asset.original_url,
+                    asset.timestamp,
+                    ex_name,
+                    e
+                ))
+                continue
+            else:
+                raise
+
+        write(b'commit refs/heads/waybackpack\n')
+        write(b'mark :')
+        write(str(n).encode())
+        write(b'\n')
+        write(b'committer Wayback Machine <https://web.archive.org/> ')
+        timestamp = datetime.datetime.strptime(asset.timestamp, '%Y%m%d%H%M%S').timestamp()
+        write(str(int(timestamp)).encode())
+        write(b' +0000\n')
+        flag = 'id_' if raw else ''
+        url = asset.get_archive_url(flag)
+        url = url.encode()
+        write(b'data ')
+        write(str(len(url)).encode())
+        write(b'\n')
+        write(url)
+        write(b'\n')
+        if n > 1:
+            write(b'from :')
+            write(str(n - 1).encode())
+            write(b'\n')
+        write(b'M 644 inline ')
+        write(qpath)
+        write(b'\n')
+        write(b'data ')
+        write(str(len(content)).encode())
+        write(b'\n')
+        write(content)
+        write(b'\n')
+
+if __name__ == '__main__':
+    waybackpack.Pack.download_to  # sanity check
+    waybackpack.Pack.download_to = git_download_to
+    waybackpack.cli.main()
+
+# vim:ts=4 sts=4 sw=4 et
