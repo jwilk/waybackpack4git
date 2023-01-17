@@ -33,8 +33,18 @@ def git_download_to(self, directory,
 def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT, ignore_errors=False):
     logger = waybackpack.pack.logger
 
-    write = stream.write
-    write(b'reset refs/heads/waybackpack\n')
+    def write(*args):
+        for arg in args:
+            if isinstance(arg, int):
+                arg = str(arg)
+            if isinstance(arg, str):
+                arg = arg.encode()
+            if isinstance(arg, bytes):
+                stream.write(arg)
+                continue
+            raise TypeError
+
+    write('reset refs/heads/waybackpack\n')
 
     path_head, path_tail = os.path.split(self.parsed_url.path)
     if path_tail == "":
@@ -74,34 +84,21 @@ def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT
             else:
                 raise
 
-        write(b'commit refs/heads/waybackpack\n')
-        write(b'mark :')
-        write(str(n).encode())
-        write(b'\n')
-        write(b'committer Wayback Machine <https://web.archive.org/> ')
+        write('commit refs/heads/waybackpack\n')
+        write('mark :', n, '\n')
         timestamp = datetime.datetime.strptime(asset.timestamp, '%Y%m%d%H%M%S').timestamp()
-        write(str(int(timestamp)).encode())
-        write(b' +0000\n')
+        write('committer Wayback Machine <https://web.archive.org/> ', int(timestamp), ' +0000\n')
         flag = 'id_' if raw else ''
         url = asset.get_archive_url(flag)
         url = url.encode()
-        write(b'data ')
-        write(str(len(url)).encode())
-        write(b'\n')
-        write(url)
-        write(b'\n')
+        write('data ', len(url), '\n')
+        write(url, '\n')
         if n > 1:
-            write(b'from :')
-            write(str(n - 1).encode())
-            write(b'\n')
-        write(b'M 644 inline ')
-        write(qpath)
-        write(b'\n')
-        write(b'data ')
-        write(str(len(content)).encode())
-        write(b'\n')
+            write(b'from :', n - 1, '\n')
+        write('M 644 inline ', qpath, '\n')
+        write('data ', len(content), '\n')
         write(content)
-        write(b'\n')
+        write('\n')
 
 if __name__ == '__main__':
     waybackpack.Pack.download_to  # sanity check
