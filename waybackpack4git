@@ -9,7 +9,6 @@ import datetime
 import os
 import re
 import subprocess
-import sys
 
 import waybackpack.pack
 import waybackpack.cli
