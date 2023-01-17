@@ -13,6 +13,8 @@ import subprocess
 import waybackpack.cli
 import waybackpack.pack
 
+...  # Python 3 is required
+
 def git_download_to(self, directory,
         raw=False,
         root=waybackpack.pack.DEFAULT_ROOT,
