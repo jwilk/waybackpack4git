@@ -10,8 +10,8 @@ import os
 import re
 import subprocess
 
-import waybackpack.pack
 import waybackpack.cli
+import waybackpack.pack
 
 def git_download_to(self, directory,
         raw=False,
