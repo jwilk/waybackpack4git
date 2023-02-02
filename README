@@ -20,27 +20,27 @@ to save snapshots into git repository:
    commit 4785829166248ea5093a893fdf9106eca3b29215 (HEAD -> waybackpack)
    Author: Wayback Machine <https://web.archive.org/>
    Date:   2002-06-04 07:04:18 +0000
-   
+
        https://web.archive.org/web/20020604090418/http://example.org/
-   
+
     example.org/index.html | 28 ++++++++++++++--------------
     1 file changed, 14 insertions(+), 14 deletions(-)
-   
+
    commit ea6b5133e9e2d6141361af18bce43b92b61ca831
    Author: Wayback Machine <https://web.archive.org/>
    Date:   2002-06-03 08:20:37 +0000
-   
+
        https://web.archive.org/web/20020603102037/http://example.org/
-   
+
     example.org/index.html | 28 ++++++++++++++--------------
     1 file changed, 14 insertions(+), 14 deletions(-)
-   
+
    commit 0820e059b2de8dfbbff50aeffdab5a836ca835db
    Author: Wayback Machine <https://web.archive.org/>
    Date:   2002-06-02 20:02:45 +0000
-   
+
        https://web.archive.org/web/20020602220245/http://example.org/
-   
+
     example.org/index.html | 28 ++++++++++++++--------------
     1 file changed, 14 insertions(+), 14 deletions(-)
 
