@@ -30,6 +30,7 @@ def git_download_to(self, directory,
         _git_download_to(self, stream=proc.stdin, raw=raw, root=root, ignore_errors=ignore_errors)
     if proc.returncode != 0:
         raise RuntimeError('git-fast-import failed')
+    subprocess.check_call(['git', '-C', directory, 'reset', '--hard'])
 
 def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT, ignore_errors=False):
     logger = waybackpack.pack.logger
