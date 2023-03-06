@@ -73,6 +73,8 @@ def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT
                 raw=raw,
                 root=root
             )
+            if content is None:
+                continue
         except Exception as e:
             if ignore_errors == True:
                 ex_name = ".".join([ e.__module__, e.__class__.__name__ ])
