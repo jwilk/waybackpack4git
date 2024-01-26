@@ -6,15 +6,17 @@ jobs:
   main:
     strategy:
       matrix:
-        os:
-        - ubuntu-20.04
-        - ubuntu-22.04
+        include:
+        - os: ubuntu-20.04
+          waybackpack: waybackpack-0.3.0
+        - os: ubuntu-22.04
     runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v4
     - name: pip install waybackpack
-      run:
-        python3 -m pip install waybackpack
+      run: |
+        waybackpack=${{matrix.waybackpack || 'waybackpack'}}
+        python3 -m pip install ${waybackpack/-/==}
     - name: run tests
       run:
         WAYBACKPACK4GIT_NETWORK_TESTING=1 prove -v
