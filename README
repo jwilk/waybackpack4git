@@ -1,3 +1,6 @@
+Overview
+========
+
 **waybackpack4git** patches waybackpack_
 to save snapshots into git repository:
 
@@ -43,5 +46,14 @@ to save snapshots into git repository:
 
     example.org/index.html | 28 ++++++++++++++--------------
     1 file changed, 14 insertions(+), 14 deletions(-)
+
+Requirements
+============
+
+* Python 3
+
+* waybackpack_ (≥ 0.3)
+
+* git
 
 .. vim:ft=rst ts=3 sts=3 sw=3 et
