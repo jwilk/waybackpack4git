@@ -9,6 +9,7 @@ import datetime
 import os
 import re
 import subprocess
+import time
 
 import waybackpack.cli
 import waybackpack.pack
@@ -20,19 +21,21 @@ def git_download_to(self, directory,
         root=waybackpack.pack.DEFAULT_ROOT,
         ignore_errors=False,
         no_clobber=False,
-        progress=False):
+        progress=False,
+        delay=0,
+        fallback_char="_"):
 
     os.mkdir(directory)
     subprocess.check_call(['git', '-c', 'init.defaultBranch=waybackpack', 'init', '--', directory])
     # Git before v2.28 didn't understand init.defaultBranch, so let's check out the branch manually:
     subprocess.check_call(['git', '-C', directory, 'checkout', '-b', 'waybackpack'])
     with subprocess.Popen(['git', '-C', directory, 'fast-import', '--quiet'], stdin=subprocess.PIPE) as proc:
-        _git_download_to(self, stream=proc.stdin, raw=raw, root=root, ignore_errors=ignore_errors)
+        _git_download_to(self, stream=proc.stdin, raw=raw, root=root, ignore_errors=ignore_errors, delay=delay)
     if proc.returncode != 0:
         raise RuntimeError('git-fast-import failed')
     subprocess.check_call(['git', '-C', directory, 'reset', '--hard'])
 
-def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT, ignore_errors=False):
+def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT, ignore_errors=False, delay=0):
     logger = waybackpack.pack.logger
 
     def write(*args):
@@ -60,6 +63,10 @@ def _git_download_to(self, stream, raw=False, root=waybackpack.pack.DEFAULT_ROOT
     qpath = os.fsencode(qpath)
 
     for n, asset in enumerate(self.assets, 1):
+
+        if n > 1 and delay:
+            logger.info("Sleeping {0} seconds".format(delay))
+            time.sleep(delay)
 
         logger.info(
             "Fetching {0} @ {1}".format(
